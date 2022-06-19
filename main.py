@@ -1,219 +1,104 @@
-from math import *
-
 import pygame
+import pyrr
 from OpenGL.GL import *
-from OpenGL.GLU import *
 from pygame.locals import *
+from OpenGL.GL.shaders import *
+import numpy as np
+import os
+from objloader import OBJ
 
+class Object:
+    def getFileContents(filename):
+        p = os.path.join(os.getcwd(), "shaders", filename)
+        return open(p, 'r').read()
 
-def init():
-    pygame.init()
-    display = (500, 500)
-    pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
-    glClearColor(0.0, 1.0, 1.0, 1.0)
-    gluOrtho2D(-1.0, 1.0, -1.0, 1.0)
+    def __init__(self):
+        global VBO, program, texture,indices,cube_faces
+        pygame.init()
+        display = (500, 500)
+        pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
+        glClearColor(.30, 0.20, 0.20, 1.0)
+        glViewport(0, 0, 500, 500)
 
+        vertexShader = compileShader(self.getFileContents("vertex.shader"), GL_VERTEX_SHADER)
+        fragmentShader = compileShader(self.getFileContents("fragment.shader"), GL_FRAGMENT_SHADER)
 
-def draw():
-    glClear(GL_COLOR_BUFFER_BIT)
-    glColor3f(0.0, 1.0, 0.0)
-
-    glBegin(GL_POINTS)
-
-    glVertex2f(0.0, 0.0)
-
-    glEnd()
-    glFlush()
-def circle(x, y, r):
-
-    glBegin(GL_POLYGON)
-
-    for i in range(0, 200):
-
-        pi = 3.1416
-        A = (i*2*pi)/25
-        x1 = x+ ((r-0.03)* cos(A))
-        y1 = y + ((r)*sin(A))
-        glVertex2f(x1, y1)
-    glEnd()
-
-def sky():
-    glColor3f(0.110, 0.565, 1.000)
-    glBegin(GL_QUADS)
-    glVertex2f(-1.0, 0.2)
-    glVertex2f(-1.0, 1.0)
-    glVertex2f(1.0, 1.0)
-    glVertex2f(1.0, 0.2)
-    glEnd()
-
-def field():
-    glColor3f(0.420, 0.557, 0.137)
-    glBegin(GL_QUADS)
-    glVertex2f(-1.0, 0.2)
-    glVertex2f(-1.0, -0.5)
-    glVertex2f(1.0, -1.0)
-    glVertex2f(1.0, 0.2)
-    glEnd()
-def river():
-    glColor3f(0.255, 0.412, 0.882)
-    glBegin(GL_QUADS)
-    glVertex2f(-1.0, -1.0)
-    glVertex2f(-1.0, -0.5)
-    glVertex2f(1.0, -0.1)
-    glVertex2f(1.0, -1.0)
-    glEnd()
-
-def hill():
-    glColor3f(0.627, 0.322, 0.176)
-    glBegin(GL_POLYGON)
-    glVertex2f(-0.20, 0.20)
-    glVertex2f(0.03, 0.50)
-    glVertex2f(0.20, 0.20)
-    glEnd()
-
-    glBegin(GL_POLYGON)
-    glVertex2f(-0.05, 0.20)
-    glVertex2f(-0.38, 0.45)
-    glVertex2f(-0.60, 0.20)
-    glEnd()
-
-    glBegin(GL_POLYGON)
-    glVertex2f(-0.90, 0.20)
-    glVertex2f(-0.65, 0.38)
-    glVertex2f(-0.50, 0.20)
-    glEnd()
-
-    glBegin(GL_POLYGON)
-    glVertex2f(-1.3, 0.20)
-    glVertex2f(-0.98, 0.35)
-    glVertex2f(-0.90, 0.40)
-    glVertex2f(-0.75, 0.20)
-
-
-    glEnd()
-
-    glBegin(GL_POLYGON)
-    glVertex2f(0.56, 0.20)
-    glVertex2f(0.38, 0.45)
-    glVertex2f(0.10, 0.20)
-    glEnd()
-
-    glBegin(GL_POLYGON)
-    glVertex2f(0.82, 0.20)
-    glVertex2f(0.67, 0.40)
-    glVertex2f(0.43, 0.20)
-    glEnd()
-
-    glBegin(GL_POLYGON)
-    glVertex2f(1.3, 0.20)
-    glVertex2f(0.89, 0.40)
-    glVertex2f(0.71, 0.20)
-    glEnd()
-def sun():
-    glColor3f(1.000, 0.843, 0.000)
-    circle(-0.25, 0.75,0.18)
-
-def moon():
-    glPushMatrix()
-    glColor3f(1.0, 1.0, 1.0)
-    circle(0.75, 0.75, 0.18)
-    glPopMatrix()
-
-def cloud1():
-    glColor3f(0.80, 0.80, 0.80)
-    circle(-0.85, 0.77, 0.15)
-    circle(-0.79, 0.70, 0.15)
-    circle(-0.70, 0.70, 0.15)
-    circle(-0.75, 0.77, 0.15)
-
-def cloud2():
-    glColor3f(0.80, 0.80, 0.80)
-    circle(0.35, 0.77, 0.15)
-    circle(0.45, 0.70, 0.15)
-    circle(0.55, 0.75, 0.15)
-    circle(0.45, 0.80, 0.15)
-
-def tree1():
-    glColor3f(0.38, 0.19, 0.0)
-    glBegin(GL_POLYGON)
-    glVertex2f(-0.25, -0.30)
-    glVertex2f(-0.25, -0.12)
-    glVertex2f(-0.27, -0.12)
-    glVertex2f(-0.27, -0.30)
-    glEnd()
-
-    glColor3f(0.0, 0.43, 0.0)
-    glBegin(GL_POLYGON)
-    glVertex2f(-0.36, -0.12)
-    glVertex2f(-0.26, 0.12)
-    glVertex2f(-0.16, -0.12)
-    glEnd()
-
-    glBegin(GL_POLYGON)
-    glVertex2f(-0.36, -0.04)
-    glVertex2f(-0.26, 0.20)
-    glVertex2f(-0.16, -0.04)
-    glEnd()
-
-    glBegin(GL_POLYGON)
-    glVertex2f(-0.36, 0.04)
-    glVertex2f(-0.26, 0.28)
-    glVertex2f(-0.16, 0.04)
-    glEnd()
+        program = glCreateProgram()
+        glAttachShader(program, vertexShader)
+        glAttachShader(program, fragmentShader)
+        glLinkProgram(program)
+        glEnable(GL_DEPTH_TEST)
 
 
 
-def tree2():
-    glColor3f(0.38, 0.19, 0.0)
-    glBegin(GL_POLYGON)
-    glVertex2f(-0.05, -0.20)
-    glVertex2f(-0.05, 0.00)
-    glVertex2f(-0.07, 0.00)
-    glVertex2f(-0.07, -0.20)
-    glEnd()
+        obj = OBJ("model/VillageUnity.obj")
+        tex = obj.loadTexture("model/historyvillage.png")
+        vertices = obj.vertices
+        self.vertex_count = len(self.vertices)
 
-    glColor3f(0.0, 0.43, 0.0)
-    glBegin(GL_POLYGON)
-    glVertex2f(-0.18, 0.00)
-    glVertex2f(-0.06, 0.24)
-    glVertex2f(0.06, 0.00)
-    glEnd()
+        self.vertices = np.array(self.vertices, dtype=np.float)
 
+        self.vao = glGenVertexArrays(1)
+        glBindVertexArray(self.vao)
 
-    glBegin(GL_POLYGON)
-    glVertex2f(-0.18, 0.08)
-    glVertex2f(-0.06, 0.32)
-    glVertex2f(0.06, 0.08)
-    glEnd()
+        self.vbo = glGenBuffers(1)
+        glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
+        glBufferData(GL_ARRAY_BUFFER, self.vertices.nbytes, self.vertices, GL_STATIC_DRAW)
+        glEnableVertexAttribArray(0)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(0))
+        glEnableVertexAttribArray(1)
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(12))
 
-    glBegin(GL_POLYGON)
-    glVertex2f(-0.18, 0.16)
-    glVertex2f(-0.06, 0.40)
-    glVertex2f(0.06, 0.16)
-    glEnd()
-
-
-def main():
-    init()
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
+        # cameras matrix
+        projection_transform = pyrr.matrix44.create_perspective_projection(
+            fovy=45, aspect=640 / 480,
+            near=0.1, far=10, dtype=np.float32
+        )
+        glUniformMatrix4fv(
+            glGetUniformLocation(vertexShader, "projection"),
+            1, GL_FALSE, projection_transform
+        )
+        modelMatrixLocation = glGetUniformLocation(vertexShader, "model")
+        self.main()
 
 
-        sky()
-        river()
-        field()
-        hill()
-        sun()
-        cloud1()
-        cloud2()
-        tree1()
-        tree2()
 
-        pygame.display.flip()
+    def main(self):
+        running = True
+        while (running):
+            # check events
+            for event in pygame.event.get():
+                if (event.type == QUIT):
+                    running = False
 
-        pygame.time.wait(10)
+            # refresh screen
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+            glUseProgram(self.vertexShader)
+            glUseProgram(self.fragmentShader)
 
-main()
+
+            glUniformMatrix4fv(self.modelMatrixLocation, 1, GL_FALSE, self.model_transform)
+
+
+
+            glBindVertexArray(self.vao)
+            glDrawArrays(GL_TRIANGLES, 0, self.vertex_count)
+
+            pygame.display.flip()
+
+            # display.flip()
+
+            # # timing
+            # .clock.tick(60)
+            # self.quit()
+            # box = OBJ('./model/seoul_v2.obj')
+            # #
+            # glPushMatrix()
+            # glTranslatef(2, 3, 4)
+            # box.render()
+            # glPopMatrix()
+            # pygame.display.flip()
+            # pygame.time.wait(10)
+myApp = Object()
+
+
